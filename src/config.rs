@@ -8,15 +8,15 @@ const DEFAULT_GRAPHQL_ENDPOINT: &str = "localhost:3000/graphql";
 
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct Config {
-    environments: Vec<Environment>,
-    default_environment: Option<String>,
-    default_graphql_endpoint: Option<String>
+    pub environments: Vec<Environment>,
+    pub default_environment: Option<String>,
+    pub default_graphql_endpoint: Option<String>
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct Environment {
-    name: String,
-    graphql_endpoint: Option<String>
+    pub name: String,
+    pub graphql_endpoint: Option<String>
 }
 
 impl Environment {

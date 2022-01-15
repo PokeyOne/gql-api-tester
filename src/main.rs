@@ -4,6 +4,9 @@ use clap::{Parser, Subcommand};
 use config::Config;
 use std::path::PathBuf;
 
+const GREEN: &str = "\x1b[92m";
+const CLEAR: &str = "\x1b[0m";
+
 #[derive(Parser, Debug)]
 #[clap(name = "gql_api_tester", version, author, about)]
 struct Cli {
@@ -40,9 +43,6 @@ enum ConfigCommand {
         /// environment. By default all environments are shown.
         #[clap(long)]
         env: Option<String>,
-        /// Explicitly shows the full configuration and all the options.
-        #[clap(long, short)]
-        full: bool,
         /// Output the configuration as yaml data. Implies '--full'. Ignores
         /// the '--env' flag.
         #[clap(long)]
@@ -65,8 +65,8 @@ fn main() {
             test_command(path);
         },
         Command::Config { command } => match command {
-            ConfigCommand::View { env, full, yaml } => {
-                config_view_command(env, full, yaml, config);
+            ConfigCommand::View { env, yaml } => {
+                config_view_command(env, yaml, config);
             }
         }
     }
@@ -76,15 +76,14 @@ fn test_command(_path: PathBuf) {
     println!("This command is unimplemented");
 }
 
-fn config_view_command(env: Option<String>, full: bool, yaml: bool, config: Config) {
-    println!("config view");
-
+fn config_view_command(env: Option<String>, yaml: bool, config: Config) {
     if yaml {
         let config_text = config.to_yaml();
         println!("{config_text}");
     } else {
-        if full {
-            
+        println!("{GREEN}--- Environments Loaded ---{CLEAR}");
+        for env in &config.environments {
+            println!("  {}", env.name);
         }
     }
 }
