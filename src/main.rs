@@ -1,6 +1,6 @@
 mod config;
 
-use clap::{AppSettings, Parser, Subcommand};
+use clap::{Parser, Subcommand};
 use config::Config;
 use std::path::PathBuf;
 
@@ -24,6 +24,29 @@ enum Command {
         /// specified otherwise in the config file.
         #[clap(long)]
         env: Option<String>
+    },
+    /// Interact with the configuration.
+    Config {
+        #[clap(subcommand)]
+        command: ConfigCommand
+    }
+}
+
+#[derive(Subcommand, Debug)]
+enum ConfigCommand {
+    /// Load and view the current configuration
+    View {
+        /// If specified, only show the configuration for the specified
+        /// environment. By default all environments are shown.
+        #[clap(long)]
+        env: Option<String>,
+        /// Explicitly shows the full configuration and all the options.
+        #[clap(long, short)]
+        full: bool,
+        /// Output the configuration as yaml data. Implies '--full'. Ignores
+        /// the '--env' flag.
+        #[clap(long)]
+        yaml: bool
     }
 }
 
@@ -40,10 +63,28 @@ fn main() {
             //       to use and pass to the funciton.
 
             test_command(path);
+        },
+        Command::Config { command } => match command {
+            ConfigCommand::View { env, full, yaml } => {
+                config_view_command(env, full, yaml, config);
+            }
         }
     }
 }
 
-fn test_command(path: PathBuf) {
-    println!("test");
+fn test_command(_path: PathBuf) {
+    println!("This command is unimplemented");
+}
+
+fn config_view_command(env: Option<String>, full: bool, yaml: bool, config: Config) {
+    println!("config view");
+
+    if yaml {
+        let config_text = config.to_yaml();
+        println!("{config_text}");
+    } else {
+        if full {
+            
+        }
+    }
 }
