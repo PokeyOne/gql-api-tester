@@ -1,4 +1,9 @@
-mod config;
+//! This is the main executable to use from the command line. Code in this part
+//! of the code should all be related to the cli, and all actual functionality
+//! should be defined under the lib.rs file. This consequently means that most
+//! of the `mod` definitions should go in lib.rs and then use them here.
+
+use gql_api_tester::config;
 
 use clap::{Parser, Subcommand};
 use config::Config;
