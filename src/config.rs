@@ -1,16 +1,19 @@
+#[cfg(test)]
+mod tests;
+
 use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
 
-const DEFAULT_GRAPHQL_ENDPOINT: String = "localhost:3000".to_string();
+const DEFAULT_GRAPHQL_ENDPOINT: &str = "localhost:3000/graphql";
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct Config {
     environments: Vec<Environment>,
     default_environment: Option<String>,
     default_graphql_endpoint: Option<String>
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct Environment {
     name: String,
     graphql_endpoint: Option<String>
@@ -33,7 +36,7 @@ impl Config {
                 Environment::new("production", None)
             ],
             default_environment: Some("development".to_string()),
-            default_graphql_endpoint: Some("localhost:3000".to_string())
+            default_graphql_endpoint: Some("localhost:3000/graphql".to_string())
         }
     }
 
@@ -86,9 +89,10 @@ Loading default config");
         }
     }
 
-    pub fn environment(&self, name: String) -> Option<Environment> {
-        for environment in self.environments {
-            if &environment.name == &name {
+    /// Look for and get the environment with the name given.
+    pub fn environment(&self, name: &str) -> Option<Environment> {
+        for environment in &self.environments {
+            if &environment.name == name {
                 return Some(environment.clone());
             }
         }
@@ -96,22 +100,26 @@ Loading default config");
         None
     }
 
-    pub fn graphql_endpoint(&self, env: Option<String>) -> String {
-        let env = match env {
-            Some(env) => Some(env),
-            None => self.default_environment
+    pub fn graphql_endpoint(&self, env: Option<&str>) -> String {
+        let env: Option<&str> = match env {
+            Some(val) => Some(val),
+            None => match &self.default_environment {
+                Some(val) => Some(val.as_str()),
+                None => None
+            }
         };
 
         // TODO: This should be converted to a let chain once Rust eRFC 2497
         //       is done. See: https://github.com/rust-lang/rust/issues/53667
         //  SEE: b9ede957ca220e5630f774cf9b7851a934393a9e (git commit)
-        if let Some(env) = env &&
-            let Some(env) = self.environment(env) &&
-            let Some(endpoint) = env.graphql_endpoint
-        {
-            endpoint
-        } else {
-            DEFAULT_GRAPHQL_ENDPOINT
+        if let Some(env) = env {
+            if let Some(env) = self.environment(env) {
+                if let Some(endpoint) = env.graphql_endpoint {
+                    return endpoint;
+                }
+            }
         }
+
+        DEFAULT_GRAPHQL_ENDPOINT.to_string()
     }
 }
