@@ -4,7 +4,7 @@ mod tests;
 use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
 
-const DEFAULT_GRAPHQL_ENDPOINT: &str = "localhost:3000/graphql";
+pub const DEFAULT_GRAPHQL_ENDPOINT: &str = "localhost:3000/graphql";
 
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct Config {
@@ -107,29 +107,41 @@ Loading default config");
         None
     }
 
+    /// Find the graphql endpoint given the current environment. The priority
+    /// of configuration endpoints from highest to lowest is as follows:
+    /// 1. The given environment if given and exists and has an endpoint
+    /// 2. The default environment if specified and exists and has an endpoint
+    /// 3. The default endpoint in the config file if specified
+    /// 4. The value in the [`DEFAULT_GRAPHQL_ENDPOINT`] constant.
     pub fn graphql_endpoint(&self, env: Option<&str>) -> String {
-        // Get the current environment in the option given, or if none check for
-        // a default environment.
-        let env_maybe: Option<&str> = match env {
-            Some(val) => Some(val),
-            None => match &self.default_environment {
-                Some(val) => Some(val.as_str()),
-                None => None
-            }
-        };
-
-        // TODO: This should be converted to a let chain once Rust eRFC 2497
-        //       is done. See: https://github.com/rust-lang/rust/issues/53667
-        //  SEE: b9ede957ca220e5630f774cf9b7851a934393a9e (git commit)
-
-        if let Some(env_name) = env_maybe {
-            if let Some(env) = self.environment(env_name) {
-                if let Some(endpoint) = env.graphql_endpoint {
+        // First check the specified environment
+        if let Some(env_name) = env {
+            // Find the given environment by name
+            if let Some(environment) = self.environment(env_name) {
+                // Make sure the environment has an endpoint
+                if let Some(endpoint) = environment.graphql_endpoint {
                     return endpoint;
                 }
             }
         }
 
+        // Now check for and enpoint in the default environment
+        if let Some(env_name) = &self.default_environment {
+            // Find teh given environment by name
+            if let Some(environment) = self.environment(env_name) {
+                // Make sure the environment has and endpoint
+                if let Some(endpoint) = environment.graphql_endpoint {
+                    return endpoint;
+                }
+            }
+        }
+
+        // Check for a configured default
+        if let Some(endpoint) = &self.default_graphql_endpoint {
+            return endpoint.clone();
+        }
+
+        // No configured endpoint, return default
         DEFAULT_GRAPHQL_ENDPOINT.to_string()
     }
 }
