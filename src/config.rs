@@ -104,6 +104,7 @@ Loading default config");
 
         // TODO: This should be converted to a let chain once Rust eRFC 2497
         //       is done. See: https://github.com/rust-lang/rust/issues/53667
+        //  SEE: b9ede957ca220e5630f774cf9b7851a934393a9e (git commit)
         if let Some(env) = env &&
             let Some(env) = self.environment(env) &&
             let Some(endpoint) = env.graphql_endpoint
