@@ -1,0 +1,4 @@
+environments:
+  - name: development
+    graphql_endpoint: "localhost:3000/graphql"
+default_environment: development

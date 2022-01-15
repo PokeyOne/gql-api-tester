@@ -9,6 +9,8 @@ const DEFAULT_GRAPHQL_ENDPOINT: &str = "localhost:3000/graphql";
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct Config {
     pub environments: Vec<Environment>,
+    /// The default environment to run. optional. Takes precedence over the
+    /// default_graphql_endpoint option if the environment has an enpoint defined.
     pub default_environment: Option<String>,
     pub default_graphql_endpoint: Option<String>
 }
@@ -106,7 +108,9 @@ Loading default config");
     }
 
     pub fn graphql_endpoint(&self, env: Option<&str>) -> String {
-        let env: Option<&str> = match env {
+        // Get the current environment in the option given, or if none check for
+        // a default environment.
+        let env_maybe: Option<&str> = match env {
             Some(val) => Some(val),
             None => match &self.default_environment {
                 Some(val) => Some(val.as_str()),
@@ -117,8 +121,9 @@ Loading default config");
         // TODO: This should be converted to a let chain once Rust eRFC 2497
         //       is done. See: https://github.com/rust-lang/rust/issues/53667
         //  SEE: b9ede957ca220e5630f774cf9b7851a934393a9e (git commit)
-        if let Some(env) = env {
-            if let Some(env) = self.environment(env) {
+
+        if let Some(env_name) = env_maybe {
+            if let Some(env) = self.environment(env_name) {
                 if let Some(endpoint) = env.graphql_endpoint {
                     return endpoint;
                 }
