@@ -3,6 +3,14 @@ name = "gql_api_tester"
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.58.0"
+description = "A utility for defining expected inputs and outputs from a GraphQL endpoint"
+readme = "README.md"
+homepage = "https://github.com/PokeyOne/gql-api-tester"
+repository = "https://github.com/PokeyOne/gql-api-tester"
+license = "GPL-3.0-only"
+license-file = "COPYING"
+keywords = ["gql", "graphql", "test", "web"]
+categories = ["command-line-utilities", "development-tools::testing", "web-programming"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
