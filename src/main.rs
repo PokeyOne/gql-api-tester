@@ -1,8 +1,11 @@
-use std::path::PathBuf;
+mod config;
+
 use clap::{AppSettings, Parser, Subcommand};
+use config::Config;
+use std::path::PathBuf;
 
 #[derive(Parser, Debug)]
-#[clap(name = "gql_tester", version, author, about)]
+#[clap(name = "gql_api_tester", version, author, about)]
 struct Cli {
     #[clap(subcommand)]
     command: Command
@@ -26,6 +29,7 @@ enum Command {
 
 fn main() {
     let args = Cli::parse();
+    let config = Config::load();
 
     match args.command {
         Command::Test { path, env } => {
