@@ -40,35 +40,40 @@ impl Config {
         }
     }
 
-    pub fn load() -> Self {
+    /// Load a configuration file or return a default one. Return result is
+    /// a tuple containing the [`Config`] and a optional of a printable warning.
+    /// For example if a config can not be found or loaded, there will be a
+    /// warning that can be printed to the user. The warning is not printed
+    /// directly because certain commands require very specific output format and having the warning printed would defeat those.
+    pub fn load() -> (Self, Option<String>) {
         let path = PathBuf::from("./gql_api_tester.yml");
 
         if !path.exists() {
-            println!("No config file exists in project; loading default.
+            let warning = format!("No config file exists in project; loading default.
 To add a config either create gql_api_tester.yml in the project root or run:
   $ gql_api_tester config init");
 
-            return Self::default();
+            return (Self::default(), Some(warning));
         }
 
         let config_file_content: String = match std::fs::read_to_string(path) {
             Ok(content) => content,
             Err(e) => {
-                println!("Could not read config file for reason: {e}
+                let warning = format!("Could not read config file for reason: {e}
 Loading default config");
-                return Self::default();
+                return (Self::default(), Some(warning));
             }
         };
 
         let loaded_config = match serde_yaml::from_str(&config_file_content) {
             Ok(conf) => conf,
             Err(e) => {
-                println!("Error in format of config file: {e}");
-                return Self::default();
+                let warning = format!("Error in format of config file: {e}");
+                return (Self::default(), Some(warning));
             }
         };
 
-        loaded_config
+        (loaded_config, None)
     }
 
     /// Seralize the configuration as a Yaml string

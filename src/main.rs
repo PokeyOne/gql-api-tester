@@ -52,7 +52,7 @@ enum ConfigCommand {
 
 fn main() {
     let args = Cli::parse();
-    let config = Config::load();
+    let (config, warning) = Config::load();
 
     match args.command {
         Command::Test { path, env } => {
@@ -62,28 +62,51 @@ fn main() {
             // TODO: env should be used to calculate an environment configuration
             //       to use and pass to the funciton.
 
-            test_command(path);
+            test_command(path, warning);
         },
         Command::Config { command } => match command {
             ConfigCommand::View { env, yaml } => {
-                config_view_command(env, yaml, config);
+                config_view_command(env, yaml, config, warning);
             }
         }
     }
 }
 
-fn test_command(_path: PathBuf) {
+fn test_command(_path: PathBuf, warning: Option<String>) {
+    if let Some(warning) = warning {
+        println!("{}", warning);
+    }
+
     println!("This command is unimplemented");
 }
 
-fn config_view_command(env: Option<String>, yaml: bool, config: Config) {
+fn config_view_command(env: Option<String>, yaml: bool, config: Config, warning: Option<String>) {
     if yaml {
         let config_text = config.to_yaml();
         println!("{config_text}");
     } else {
-        println!("{GREEN}--- Environments Loaded ---{CLEAR}");
+        if let Some(warning) = warning {
+            println!("{}", warning);
+        }
+
+        let mut max_env_name = 0;
+
         for env in &config.environments {
-            println!("  {}", env.name);
+            // Update the longest env name
+            if env.name.len() > max_env_name {
+                max_env_name = env.name.len();
+            }
+        }
+
+        println!("{:max_env_name$} | endpoint", "env");
+        println!("{:-<max_env_name$}-|-{:-<30}", "", "");
+        for env in &config.environments {
+            let mut name: String = env.name.clone();
+            while name.len() < max_env_name {
+                name.push(' ');
+            }
+            let endpoint = config.graphql_endpoint(Some(&name));
+            println!("{GREEN}{name}{CLEAR} | {endpoint}");
         }
     }
 }
