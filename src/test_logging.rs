@@ -135,4 +135,8 @@ impl TestLogger {
         // Return result
         res
     }
+
+    pub fn message_count(&self) -> usize {
+        self.logs.len()
+    }
 }
